@@ -2,12 +2,18 @@ from fastapi import FastAPI, Response
 import uvicorn
 import asyncio
 import random
+import json
 from autometrics import autometrics, init
 from autometrics.objectives import Objective, ObjectiveLatency, ObjectivePercentile
 from prometheus_client import generate_latest
 from git_utils import get_git_commit, get_git_branch
 
 app = FastAPI()
+
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
+}
 
 VERSION = "0.0.1"
 
@@ -49,19 +55,29 @@ async def snail():
     return {"suggestion": "Let's take it easy"}
 
 
-@app.get("/rabbit")
+@app.route("/rabbit", methods=["GET", "OPTION"])
 @autometrics(objective=API_QUICK_RESPONSES)
-def rabbit():
+def rabbit(req):
+    print(req)
+    # if req.get("method") == "options"
     # Rabbits are fast. They have very low latency
-    return {"suggestion": "Let's drink coffee and go for a jog"}
+    return Response(
+       json.dumps({"suggestion": "Let's drink coffee and go for a jog"}),
+        headers=CORS_HEADERS
+    )
 
 
-@app.get("/panda")
+@app.route("/panda", methods=["GET", "OPTION"])
 @autometrics(objective=API_SLO_HIGH_SUCCESS)
-async def panda():
+async def panda(req):
+    if req.method == "OPTION":
+        return Response("OK", headers=CORS_HEADERS)
     # Pandas are clumsy. They error sometimes
     await clumsy_panda_service()
-    return {"suggestion": "Let's eat bamboo. I think I found some over th--OH NO I tripped"}
+    return Response(
+        json.dumps({"suggestion": "Let's eat bamboo. I think I found some over th--OH NO I tripped"}),
+        headers=CORS_HEADERS
+    )
 
 
 @app.get("/beaver")
