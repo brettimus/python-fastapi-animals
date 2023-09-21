@@ -28,8 +28,8 @@ API_SLO_HIGH_SUCCESS = Objective(
 )
 
 API_QUICK_RESPONSES = Objective(
-    "Animal API SLO for Low Latency (100ms)",
-    latency=(ObjectiveLatency.Ms100, ObjectivePercentile.P99),
+    "Animal API SLO for Super Low Latency (10ms)",
+    latency=(ObjectiveLatency.Ms10, ObjectivePercentile.P99),
 )
 
 ANIMALS = ["snail", "rabbit", "panda", "beaver"]
@@ -61,7 +61,7 @@ def rabbit():
 async def panda():
     # Pandas are clumsy. They error sometimes
     await clumsy_panda_service()
-    return {"suggestion": "Let's eat bamboo"}
+    return {"suggestion": "Let's eat bamboo. I think I found some over th--OH NO I tripped"}
 
 
 @app.get("/beaver")
@@ -79,13 +79,8 @@ def list_animals_helper():
 
 @autometrics
 async def clumsy_panda_service():
-    """Randomly raise an error with a 50% chance"""
-    # Generate a random number between 1 and 2
-    error_chance = random.randint(1, 2)
-
-    # If the random number is 1, raise an error
-    if error_chance == 1:
-        raise Exception("Random error occurred!")
+    if random.randint(1, 2) == 1:
+        raise Exception("Panda service error occurred!")
 
 
 @autometrics
