@@ -55,11 +55,11 @@ async def snail():
     return {"suggestion": "Let's take it easy"}
 
 
-@app.route("/rabbit", methods=["GET", "OPTION"])
+@app.route("/rabbit", methods=["GET", "OPTIONS"])
 @autometrics(objective=API_QUICK_RESPONSES)
 def rabbit(req):
-    print(req)
-    # if req.get("method") == "options"
+    if req.method == "OPTIONS":
+        return Response("OK", headers=CORS_HEADERS)
     # Rabbits are fast. They have very low latency
     return Response(
        json.dumps({"suggestion": "Let's drink coffee and go for a jog"}),
@@ -67,13 +67,18 @@ def rabbit(req):
     )
 
 
-@app.route("/panda", methods=["GET", "OPTION"])
+@app.route("/panda", methods=["GET", "OPTIONS"])
 @autometrics(objective=API_SLO_HIGH_SUCCESS)
 async def panda(req):
-    if req.method == "OPTION":
+    if req.method == "OPTIONS":
         return Response("OK", headers=CORS_HEADERS)
-    # Pandas are clumsy. They error sometimes
+    # Beware! Pandas are clumsy. They error sometimes
     await clumsy_panda_service()
+
+    # Oh, also pandas are slow, they take their time
+    delay = random.randint(0, 11) * 0.1
+    await asyncio.sleep(delay)
+
     return Response(
         json.dumps({"suggestion": "Let's eat bamboo. I think I found some over th--OH NO I tripped"}),
         headers=CORS_HEADERS
