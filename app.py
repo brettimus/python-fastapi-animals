@@ -1,23 +1,21 @@
 from fastapi import FastAPI, Response
+
 import uvicorn
 import asyncio
 import random
 import json
+from git_utils import get_git_commit, get_git_branch
+
+# === Autometrics Setup === #
 from autometrics import autometrics, init
 from autometrics.objectives import Objective, ObjectiveLatency, ObjectivePercentile
 from prometheus_client import generate_latest
-from git_utils import get_git_commit, get_git_branch
 
-app = FastAPI()
-
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
-}
-
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 
 init(tracker="prometheus", version=VERSION, commit=get_git_commit(), branch=get_git_branch())
+
+app = FastAPI()
 
 # Set up a metrics endpoint for Prometheus to scrape
 # `generate_latest` returns the latest metrics data in the Prometheus text format
@@ -25,8 +23,16 @@ init(tracker="prometheus", version=VERSION, commit=get_git_commit(), branch=get_
 def metrics():
     return Response(generate_latest())
 
+# === /Autometrics Setup === #
 
-# Define Objectives for the api routes
+
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
+}
+
+
+# === Autometrics Objectives Setup === #
 
 API_SLO_HIGH_SUCCESS = Objective(
     "Animal API Route SLO for High Success Rate (99%)",
@@ -37,6 +43,9 @@ API_QUICK_RESPONSES = Objective(
     "Animal API SLO for Super Low Latency (10ms)",
     latency=(ObjectiveLatency.Ms10, ObjectivePercentile.P99),
 )
+# === /Autometrics Objectives Setup === #
+
+
 
 ANIMALS = ["snail", "rabbit", "panda", "beaver"]
 
@@ -66,23 +75,25 @@ def rabbit(req):
         headers=CORS_HEADERS
     )
 
-
+# === Autometrics in Action (Hover over `panda`!) === #
 @app.route("/panda", methods=["GET", "OPTIONS"])
 @autometrics(objective=API_SLO_HIGH_SUCCESS)
 async def panda(req):
     if req.method == "OPTIONS":
         return Response("OK", headers=CORS_HEADERS)
+
     # Beware! Pandas are clumsy. They error sometimes
-    # await clumsy_panda_service()
+    await clumsy_panda_service()
 
     # Oh, also pandas are slow, they take their time
-    # delay = random.randint(0, 11) * 0.1
-    # await asyncio.sleep(delay)
+    delay = random.randint(0, 11) * 0.15
+    await asyncio.sleep(delay)
 
     return Response(
         json.dumps({"suggestion": "Let's eat bamboo. I think I found some over th--OH NO I tripped"}),
         headers=CORS_HEADERS
     )
+# === /Autometrics in Action === #
 
 
 @app.get("/beaver")
