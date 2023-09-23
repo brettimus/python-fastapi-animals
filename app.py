@@ -15,7 +15,7 @@ CORS_HEADERS = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 }
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 init(tracker="prometheus", version=VERSION, commit=get_git_commit(), branch=get_git_branch())
 
@@ -73,11 +73,11 @@ async def panda(req):
     if req.method == "OPTIONS":
         return Response("OK", headers=CORS_HEADERS)
     # Beware! Pandas are clumsy. They error sometimes
-    await clumsy_panda_service()
+    # await clumsy_panda_service()
 
     # Oh, also pandas are slow, they take their time
-    delay = random.randint(0, 11) * 0.1
-    await asyncio.sleep(delay)
+    # delay = random.randint(0, 11) * 0.1
+    # await asyncio.sleep(delay)
 
     return Response(
         json.dumps({"suggestion": "Let's eat bamboo. I think I found some over th--OH NO I tripped"}),
