@@ -11,7 +11,12 @@ from autometrics import autometrics, init
 from autometrics.objectives import Objective, ObjectiveLatency, ObjectivePercentile
 from prometheus_client import generate_latest
 
-VERSION = "0.0.3"
+VERSION = "0.0.5"
+
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
+}
 
 init(tracker="prometheus", version=VERSION, commit=get_git_commit(), branch=get_git_branch())
 
@@ -26,21 +31,15 @@ def metrics():
 # === /Autometrics Setup === #
 
 
-CORS_HEADERS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
-}
-
-
 # === Autometrics Objectives Setup === #
 
 API_SLO_HIGH_SUCCESS = Objective(
-    "Animal API Route SLO for High Success Rate (99%)",
+    "Animal API Route SLO for High Success Rate",
     success_rate=ObjectivePercentile.P99,
 )
 
 API_QUICK_RESPONSES = Objective(
-    "Animal API SLO for Super Low Latency (10ms)",
+    "Animal API SLO for Super Low Latency",
     latency=(ObjectiveLatency.Ms10, ObjectivePercentile.P99),
 )
 # === /Autometrics Objectives Setup === #
