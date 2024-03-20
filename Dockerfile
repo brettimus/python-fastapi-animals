@@ -23,6 +23,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Copy the content of the local src directory to the working directory
 COPY ./app.py /app/
+COPY ./logger.py /app/
 COPY ./git_utils.py /app/
 
 EXPOSE 8080
