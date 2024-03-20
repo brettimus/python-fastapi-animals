@@ -1,5 +1,5 @@
 anyio==3.6.2
-autometrics==0.9
+autometrics==1.0.0
 
 # This is how you would use a local build of autometrics:
 # shame-deps/autometrics-0.5-py3-none-any.whl
