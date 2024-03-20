@@ -10,6 +10,7 @@ from git_utils import get_git_commit, get_git_branch
 from autometrics import autometrics, init
 from autometrics.objectives import Objective, ObjectiveLatency, ObjectivePercentile
 from prometheus_client import generate_latest
+from logger import get_logger
 
 VERSION = "0.0.5"
 
@@ -43,7 +44,6 @@ API_QUICK_RESPONSES = Objective(
     latency=(ObjectiveLatency.Ms10, ObjectivePercentile.P99),
 )
 # === /Autometrics Objectives Setup === #
-
 
 
 ANIMALS = ["snail", "rabbit", "panda", "beaver"]
@@ -121,6 +121,15 @@ async def snail_service():
     await asyncio.sleep(delay)
 
 
+@app.exception_handler(Exception)
+async def exception_handler(request, exc):
+    logger = get_logger()
+    logger.error(f"An error occurred: {exc}")
+    return Response(
+        json.dumps({"message": "An error occurred."}),
+        headers=CORS_HEADERS,
+    )
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8080)
-
