@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timezone
 import logging
 from opensearchpy import AsyncOpenSearch
 import os
@@ -15,11 +16,13 @@ class OpenSearchHandler(logging.Handler):
     def emit(self, record):
         print("Emitting log")
         log_entry = self.format(record)
+        timestamp_iso = datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat()
+
         document = {
             "message": log_entry,
             "logger": record.name,
             "level": record.levelname,
-            "timestamp": record.created,
+            "timestamp": timestamp_iso,  # Use the ISO 8601 formatted timestamp, otherwise the timestamp is indexed as a float
         }
         # Schedule the coroutine to run on the event loop
         # This is somewhat straightforward for us because we assume
@@ -35,7 +38,7 @@ class OpenSearchHandler(logging.Handler):
 
 def get_logger(name="animalbuttons", log_file="animalbuttons.log", level=logging.INFO):
     file_handler = logging.FileHandler(log_file)
-    opensearch_handler = OpenSearchHandler([opensearch_host], "animalbuttons-logs")
+    opensearch_handler = OpenSearchHandler([opensearch_host], "animalbuttons-logs-v2")
 
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
