@@ -1,29 +1,36 @@
+import asyncio
 import logging
 from elasticsearch import AsyncElasticsearch
 import os
 
-# Get the environment variable 'MY_VAR'. If it's not set, default to 'default_value'.
 opensearch_host = os.environ.get("OPENSEARCH_HOST", "http://localhost:9200")
 
+# NOTE - This is not production code. We shouldn't spawn tasks like this from a log handler
 class OpenSearchHandler(logging.Handler):
     def __init__(self, es_hosts, index):
         super().__init__()
         self.es = AsyncElasticsearch(hosts=es_hosts)
         self.index = index
 
-    async def emit(self, record):
+    def emit(self, record):
+        print("Emitting log")
         log_entry = self.format(record)
-        # Transform log_entry into the structure OpenSearch expects
-        # Remember to catch exceptions and handle retries/failed sends
-        await self.es.index(
-            index=self.index,
-            document={
-                "message": log_entry,
-                "logger": record.name,
-                "level": record.levelname,
-                "timestamp": record.created,
-            },
-        )
+        document = {
+            "message": log_entry,
+            "logger": record.name,
+            "level": record.levelname,
+            "timestamp": record.created,
+        }
+        # Schedule the coroutine to run on the event loop
+        # This is somewhat straightforward for us because we assume
+        # that we're running in an event loop (async web server)
+        asyncio.ensure_future(self.async_emit(document))
+
+    async def async_emit(self, document):
+        try:
+            await self.es.index(index=self.index, document=document)
+        except Exception as e:
+            print(f"Failed to send log to OpenSearch: {e}")
 
 
 def get_logger(name="animalbuttons", log_file="animalbuttons.log", level=logging.INFO):
