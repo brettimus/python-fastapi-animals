@@ -1,15 +1,15 @@
 import asyncio
 import logging
-from elasticsearch import AsyncElasticsearch
+from opensearchpy import AsyncOpenSearch
 import os
 
 opensearch_host = os.environ.get("OPENSEARCH_HOST", "http://localhost:9200")
 
 # NOTE - This is not production code. We shouldn't spawn tasks like this from a log handler
 class OpenSearchHandler(logging.Handler):
-    def __init__(self, es_hosts, index):
+    def __init__(self, hosts, index):
         super().__init__()
-        self.es = AsyncElasticsearch(hosts=es_hosts)
+        self.client = AsyncOpenSearch(hosts=hosts)
         self.index = index
 
     def emit(self, record):
@@ -28,7 +28,7 @@ class OpenSearchHandler(logging.Handler):
 
     async def async_emit(self, document):
         try:
-            await self.es.index(index=self.index, document=document)
+            await self.client.index(index=self.index, body=document)
         except Exception as e:
             print(f"Failed to send log to OpenSearch: {e}")
 
