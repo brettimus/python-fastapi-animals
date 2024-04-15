@@ -5,6 +5,7 @@ import asyncio
 import random
 import json
 from git_utils import get_git_commit, get_git_branch
+from random_utils import get_random_latency
 
 # === Autometrics Setup === #
 from autometrics import autometrics, init
@@ -116,11 +117,8 @@ async def clumsy_panda_service():
 
 @autometrics
 async def snail_service():
-    """Generate a random latency between 0 and 110ms from an exponential distribution"""
-    rate = 1/0.11  # For mean latency of 110ms
-    delay = random.expovariate(rate)
-    # Ensure delay does not exceed max latency (110ms)
-    delay = min(delay, 0.11)
+    """Generate a random latency using changing distributions based on time"""
+    delay = get_random_latency()
     await asyncio.sleep(delay)
 
 
