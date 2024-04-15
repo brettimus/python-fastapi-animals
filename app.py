@@ -129,6 +129,7 @@ async def exception_handler(request, exc):
     return Response(
         json.dumps({"message": "An error occurred."}),
         headers=CORS_HEADERS,
+        status_code=500
     )
 
 
