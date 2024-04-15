@@ -5,6 +5,7 @@ from opensearchpy import AsyncOpenSearch
 import os
 
 opensearch_host = os.environ.get("OPENSEARCH_HOST", "http://localhost:9200")
+enable_opensearch_logging = os.environ.get("OPENSEARCH_LOGGING_ENABLED", "false") == "true"
 
 # NOTE - This is not production code. We shouldn't spawn tasks like this from a log handler
 class OpenSearchHandler(logging.Handler):
@@ -38,18 +39,20 @@ class OpenSearchHandler(logging.Handler):
 
 def get_logger(name="animalbuttons", log_file="animalbuttons.log", level=logging.INFO):
     file_handler = logging.FileHandler(log_file)
-    opensearch_handler = OpenSearchHandler([opensearch_host], "animalbuttons-logs-v3")
 
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     file_handler.setFormatter(formatter)
-    opensearch_handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
     logger.addHandler(file_handler)
-    logger.addHandler(opensearch_handler)
+
+    if enable_opensearch_logging:
+        opensearch_handler = OpenSearchHandler([opensearch_host], "animalbuttons-logs-v3")
+        opensearch_handler.setFormatter(formatter)
+        logger.addHandler(opensearch_handler)
 
     return logger
