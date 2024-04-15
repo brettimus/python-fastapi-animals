@@ -19,7 +19,7 @@ CORS_HEADERS = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
 }
 
-init(tracker="prometheus", version=VERSION, commit=get_git_commit(), branch=get_git_branch())
+init(service_name="animalbuttons-api", tracker="prometheus", version=VERSION, commit=get_git_commit(), branch=get_git_branch())
 
 app = FastAPI()
 
