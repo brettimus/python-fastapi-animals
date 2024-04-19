@@ -58,9 +58,12 @@ def animals():
 
 @app.get("/snail")
 @autometrics(objective=API_QUICK_RESPONSES)
-async def snail():
+async def snail(max: int = 11):
+    """
+    max is in increments of 10 ms.
+    """
     # Snails are slow sometimes.
-    await snail_service()
+    await snail_service(max)
     return {"suggestion": "Let's take it easy"}
 
 
@@ -116,9 +119,9 @@ async def clumsy_panda_service():
 
 
 @autometrics
-async def snail_service():
+async def snail_service(max: int):
     """Generate a random latency using changing distributions based on time"""
-    delay = get_random_latency()
+    delay = get_random_latency(max)
     await asyncio.sleep(delay)
 
 
